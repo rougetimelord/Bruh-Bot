@@ -1,5 +1,8 @@
 import json, discord, random
 
+VERSION = "0.1"
+print(VERSION)
+
 
 class BruhClient(discord.Client):
     async def on_ready(self):
