@@ -1,7 +1,7 @@
 import json, discord, random
 
 VERSION = "0.1.1"
-print(VERSION)
+print("BruhBot Version: %s" % VERSION)
 
 
 class BruhClient(discord.Client):
