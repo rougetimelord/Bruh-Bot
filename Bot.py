@@ -1,16 +1,25 @@
-import json, discord, random
+import json, discord, random, asyncio
+
+
+async def dump_json(data):
+    try:
+        with open("key.json", "w") as f:
+            yield json.dump(data, f, indent=4)
+    except IOError as e:
+        print("Key.json went missing, yikes")
+        exit()
 
 
 class BruhClient(discord.Client):
     async def on_ready(self):
-        print("Logged in as %s, with ID %s" % (self.name, self.user_id))
+        print("Logged in as %s, with ID %s" % (self.user.name, self.user.id))
 
     async def on_message(self, message):
-        if message.author.id == self.user_id:
+        if message.author.id == self.user.id:
             return
         elif (
             message.content.startswith("!set")
-            and message.author.server_permissions.administrator
+            and message.author.guild_permissions.administrator
         ):
             guild = message.guild
             if guild != None:
@@ -20,12 +29,7 @@ class BruhClient(discord.Client):
                 await message.channel.send(
                     "Set channel to %s!" % message.channel.name
                 )
-                try:
-                    with open("key.json", "w") as f:
-                        json.dump(d, f, indent=4)
-                except IOError as e:
-                    print("Key.json went missing, yikes")
-                    exit(self, 1)
+                await dump_json(d)
         else:
             return
 
