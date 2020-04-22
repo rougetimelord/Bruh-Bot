@@ -1,4 +1,4 @@
-import json, discord
+import json, discord, random
 
 
 class BruhClient(discord.Client):
@@ -27,8 +27,10 @@ class BruhClient(discord.Client):
 
     async def on_member_remove(self, member):
         guild = member.guild
-        if True:
-            pass
+        if "channel-id" in d:
+            channel = self.get_channel(d["channel-id"])
+            msg = "bruh" if random.randint(0, 1) == 0 else "Bruh"
+            await channel.send(msg)
 
 
 client = discord.BruhClient()
