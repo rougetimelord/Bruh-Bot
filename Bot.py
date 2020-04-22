@@ -16,7 +16,7 @@ class BruhClient(discord.Client):
             if guild != None:
                 g_id = guild.id
                 key_name = "%s_channel" % g_id
-                if d[key_name] != message.channel.id:
+                if not key_name in d or d[key_name] != message.channel.id:
                     d[key_name] = message.channel.id
                     await message.channel.send(
                         "Set channel to %s!" % message.channel.name
