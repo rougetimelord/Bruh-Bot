@@ -31,6 +31,11 @@ class BruhClient(discord.Client):
                     except IOError as e:
                         print("Key.json went missing, yikes")
                         exit()
+        elif (
+            message.content.startswith("!test")
+            and message.author.guild_permissions.administrator
+        ):
+            await self.on_member_remove(message.author)
         else:
             return
 
@@ -40,6 +45,10 @@ class BruhClient(discord.Client):
         if key_name in d:
             channel = self.get_channel(d[key_name])
             msg = "bruh" if random.randint(0, 1) == 0 else "Bruh"
+            print(
+                "Sending message in channel: %s of Guild: %s"
+                % (channel.name, guild.name)
+            )
             await channel.send(msg)
 
 
