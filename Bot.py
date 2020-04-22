@@ -38,7 +38,7 @@ class BruhClient(discord.Client):
             await channel.send(msg)
 
 
-client = discord.BruhClient()
+client = BruhClient()
 try:
     with open("key.json", "r") as f:
         d = json.load(f)
