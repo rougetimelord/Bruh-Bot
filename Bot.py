@@ -17,7 +17,7 @@ class BruhClient(discord.Client):
                 "Set channel to %s!" % message.channel.name
             )
             try:
-                with open(key.json, "w") as f:
+                with open("key.json", "w") as f:
                     json.dump(d, f, indent=4)
             except IOError as e:
                 print("Key.json went missing, yikes")
@@ -35,7 +35,7 @@ class BruhClient(discord.Client):
 
 client = discord.BruhClient()
 try:
-    with open(key.json, "r") as f:
+    with open("key.json", "r") as f:
         d = json.load(f)
         client.run(d["token"])
 except IOError as e:
