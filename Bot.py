@@ -1,6 +1,6 @@
 import json, discord, random
 
-VERSION = "0.1"
+VERSION = "0.1.1"
 print(VERSION)
 
 
@@ -57,7 +57,11 @@ class BruhClient(discord.Client):
             message.content.startswith("!test")
             and message.author.guild_permissions.administrator
         ):
-            await self.on_member_remove(message.author)
+            guild = message.guild
+            if guild != None:
+                key_name = "%s_channel" % guild.id
+                if key_name in d and d[key_name] == message.channel.id:
+                    await self.on_member_remove(message.author)
         else:
             return
 
