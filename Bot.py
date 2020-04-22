@@ -16,6 +16,12 @@ class BruhClient(discord.Client):
             await message.channel.send(
                 "Set channel to %s!" % message.channel.name
             )
+            try:
+                with open(key.json, "w") as f:
+                    json.dump(d, f, indent=4)
+            except IOError as e:
+                print("Key.json went missing, yikes")
+                exit(self, 1)
         else:
             return
 
