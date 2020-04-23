@@ -1,6 +1,6 @@
 import json, discord, random
 
-VERSION = "0.1.3"
+VERSION = "0.1.4"
 print("BruhBot Version: %s" % VERSION)
 
 
@@ -57,12 +57,8 @@ class BruhClient(discord.Client):
             message.content.startswith("!test")
             and message.author.guild_permissions.administrator
         ):
-            if (
-                key_name != None
-                and key_name in d
-                and d[key_name] == message.channel.id
-            ):
-                await self.on_member_remove(message.author)
+            print("Sending test message")
+            await self.on_member_remove(message.author)
         else:
             return
 
