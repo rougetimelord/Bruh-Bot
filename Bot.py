@@ -1,6 +1,6 @@
 import json, discord, random
 
-VERSION = "0.1.2"
+VERSION = "0.1.3"
 print("BruhBot Version: %s" % VERSION)
 
 
@@ -20,7 +20,7 @@ class BruhClient(discord.Client):
 
     async def on_guild_remove(self, guild):
         print("Removed from guild: %s" % guild.name)
-        d.pop(self.get_key(guild), None)
+        d.pop(await self.get_key(guild), None)
         try:
             with open("key.json", "w") as f:
                 json.dump(d, f, indent=4)
@@ -30,7 +30,7 @@ class BruhClient(discord.Client):
 
     async def on_message(self, message):
         print("Message event dispatched")
-        key_name = self.get_key(message.guild)
+        key_name = await self.get_key(message.guild)
         if message.author.id == self.user.id:
             return
         if (
@@ -67,7 +67,7 @@ class BruhClient(discord.Client):
             return
 
     async def on_member_remove(self, member):
-        key_name = self.get_key(member.guild)
+        key_name = await self.get_key(member.guild)
         if key_name is not None and key_name in d:
             channel = self.get_channel(d[key_name])
             print(
