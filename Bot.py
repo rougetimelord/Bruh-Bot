@@ -1,6 +1,6 @@
 import json, discord, random
 
-VERSION = "0.1.4"
+VERSION = "0.1.5"
 print("BruhBot Version: %s" % VERSION)
 
 
@@ -10,6 +10,11 @@ class BruhClient(discord.Client):
 
     async def on_ready(self):
         print("Logged in as %s, with ID %s" % (self.user.name, self.user.id))
+        await self.change_presence(
+            activity=discord.Activity(
+                name="for bruh moments", type=discord.ActivityType.watching
+            )
+        )
 
     async def on_guild_join(self, guild):
         print("Joined guild: %s" % guild.name)
