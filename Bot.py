@@ -1,6 +1,6 @@
-import json, discord, random
+import json, discord, random, re
 
-VERSION = "0.1.7"
+VERSION = "0.2.0"
 print("BruhBot Version: %s" % VERSION)
 
 
@@ -32,6 +32,22 @@ class BruhClient(discord.Client):
         except IOError as e:
             print("Key.json went missing, yikes")
             exit()
+
+    async def on_message_delete(self, message):
+        print("Message deletion noticed")
+        async for entry in message.guild.audit_logs(limit=10):
+            if (
+                entry.action == discord.AuditLogAction.message_delete
+                and entry.target.id == message.author.id
+                and not message.author.bot
+            ):
+                user_string = (
+                    message.author.mention
+                    if message.author.mention is not None
+                    else message.author.name + message.author.discriminator
+                )
+                await message.channel.send("%s had a bruh moment" % user_string)
+                break
 
     async def on_message(self, message):
         print("Message event dispatched")
