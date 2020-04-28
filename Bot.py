@@ -1,12 +1,12 @@
 import json, discord, random, re
 
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 print("BruhBot Version: %s" % VERSION)
 
 
 class BruhClient(discord.Client):
     async def get_key(self, guild):
-        return "%s_channel" % guild.id if (guild is not None) else None
+        return "%s" % guild.id if (guild is not None) else None
 
     async def on_ready(self):
         print("Logged in as %s, with ID %s" % (self.user.name, self.user.id))
@@ -59,8 +59,12 @@ class BruhClient(discord.Client):
             and message.author.guild_permissions.administrator
         ):
             if key_name is not None:
-                if not key_name in d or d[key_name] != message.channel.id:
-                    d[key_name] = message.channel.id
+                if (
+                    not key_name in d
+                    or not "channel" in d[key_name]
+                    or d[key_name]["channel"] != message.channel.id
+                ):
+                    d[key_name]["channel"] = message.channel.id
                     await message.channel.send(
                         "Set channel to %s!" % message.channel.mention
                     )
@@ -85,8 +89,8 @@ class BruhClient(discord.Client):
 
     async def on_member_remove(self, member):
         key_name = await self.get_key(member.guild)
-        if key_name is not None and key_name in d:
-            channel = self.get_channel(d[key_name])
+        if key_name is not None and key_name in d and "channel" in d[key_name]:
+            channel = self.get_channel(d[key_name]["channel"])
             print(
                 "Sending message in channel: %s of Guild: %s"
                 % (channel.name, member.guild.name)
