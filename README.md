@@ -1,5 +1,5 @@
 # Bruh Bot
-A simple discord bot that says bruh every time someone leaves the server. Runs on Discord.py.
+A simple discord bot that says bruh every time someone leaves the server. Runs on Discord.py. [There is a node port of this bot](https://github.com/rougetimelord/BruhBotNode).
 
 ## Usage
 * The invite link is [this](https://discordapp.com/api/oauth2/authorize?client_id=702644157692379267&permissions=67584&scope=bot)
