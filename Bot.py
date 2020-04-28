@@ -1,6 +1,6 @@
 import json, discord, random
 
-VERSION = "0.1.6"
+VERSION = "0.1.7"
 print("BruhBot Version: %s" % VERSION)
 
 
