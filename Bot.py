@@ -46,7 +46,7 @@ class BruhClient(discord.Client):
                 if not key_name in d or d[key_name] != message.channel.id:
                     d[key_name] = message.channel.id
                     await message.channel.send(
-                        "Set channel to `%s`!" % message.channel.mention
+                        "Set channel to %s!" % message.channel.mention
                     )
                     try:
                         print(
