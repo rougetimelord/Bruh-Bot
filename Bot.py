@@ -1,6 +1,6 @@
 import json, discord, random, re
 
-VERSION = "0.2.2"
+VERSION = "0.2.3"
 print("BruhBot Version: %s" % VERSION)
 
 CACHE = None
