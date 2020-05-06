@@ -1,9 +1,7 @@
 import json, discord, random, re
 
-VERSION = "0.2.5"
+VERSION = "0.2.6"
 print("BruhBot Version: %s" % VERSION)
-
-CACHE = None
 
 
 class BruhClient(discord.Client):
@@ -17,6 +15,7 @@ class BruhClient(discord.Client):
                 name="for bruh moments", type=discord.ActivityType.watching
             )
         )
+        self.cache = None
 
     async def on_guild_join(self, guild):
         print("Joined guild: %s" % guild.name)
@@ -108,19 +107,21 @@ class BruhClient(discord.Client):
             )
         elif message.author.id == 160834176633929728:
             print("Caching message")
-            CACHE = message
+            pat = re.compile("p[0|o]gg[e|3]r[s|5]?", re.IGNORECASE)
+            self.cache = message
         elif message.author.id == 255118576451715072:
+            pat = re.compile("p[0|o]gg[e|3]r[s|5]?", re.IGNORECASE)
             if (
-                re.match(d["easter_egg"], message.content)
-                and message.channel.id == CACHE.channel.id
-                and CACHE is not None
+                re.search(pat, message.content)
+                and self.cache is not None
+                and message.channel.id == self.cache.channel.id
             ):
                 print("Adding bimbo")
-                await CACHE.add_reaction("🅱")
-                await CACHE.add_reaction("🇮")
-                await CACHE.add_reaction("🇲")
-                await CACHE.add_reaction("🇧")
-                await CACHE.add_reaction("🅾")
+                await self.cache.add_reaction("🅱")
+                await self.cache.add_reaction("🇮")
+                await self.cache.add_reaction("🇲")
+                await self.cache.add_reaction("🇧")
+                await self.cache.add_reaction("🅾")
         else:
             return
 
