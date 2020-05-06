@@ -1,6 +1,6 @@
 import json, discord, random, re
 
-VERSION = "0.2.4"
+VERSION = "0.2.5"
 print("BruhBot Version: %s" % VERSION)
 
 CACHE = None
@@ -111,7 +111,7 @@ class BruhClient(discord.Client):
             CACHE = message
         elif message.author.id == 255118576451715072:
             if (
-                re.match(message, d["easter_egg"])
+                re.match(d["easter_egg"], message.content)
                 and message.channel.id == CACHE.channel.id
                 and CACHE is not None
             ):
