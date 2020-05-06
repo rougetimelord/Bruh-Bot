@@ -3,6 +3,8 @@ import json, discord, random, re
 VERSION = "0.2.2"
 print("BruhBot Version: %s" % VERSION)
 
+CACHE = None
+
 
 class BruhClient(discord.Client):
     async def get_key(self, guild):
@@ -104,6 +106,17 @@ class BruhClient(discord.Client):
                 if d[key_name]["delete_message"]
                 else "Turned delete message off."
             )
+        elif message.author.id == 160834176633929728:
+            print("Caching message")
+            CACHE = message
+        elif message.author.id == 255118576451715072:
+            if re.match(message, d["easter_egg"]) and CACHE is not None:
+                print("Adding bimbo")
+                await CACHE.add_reaction("🅱")
+                await CACHE.add_reaction("🇮")
+                await CACHE.add_reaction("🇲")
+                await CACHE.add_reaction("🇧")
+                await CACHE.add_reaction("🅾")
         else:
             return
 
