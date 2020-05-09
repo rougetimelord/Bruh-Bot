@@ -1,6 +1,6 @@
 import json, discord, random, re
 
-VERSION = "0.2.6"
+VERSION = "0.2.7"
 print("BruhBot Version: %s" % VERSION)
 
 
@@ -107,10 +107,9 @@ class BruhClient(discord.Client):
             )
         elif message.author.id == 160834176633929728:
             print("Caching message")
-            pat = re.compile("p[0|o]gg[e|3]r[s|5]?", re.IGNORECASE)
             self.cache = message
         elif message.author.id == 255118576451715072:
-            pat = re.compile("p[0|o]gg[e|3]r[s|5]?", re.IGNORECASE)
+            pat = re.compile("(?:(ps)){3,}", re.IGNORECASE)
             if (
                 re.search(pat, message.content)
                 and self.cache is not None
