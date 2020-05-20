@@ -105,22 +105,6 @@ class BruhClient(discord.Client):
                 if d[key_name]["delete_message"]
                 else "Turned delete message off."
             )
-        elif message.author.id == 160834176633929728:
-            print("Caching message")
-            self.cache = message
-        elif message.author.id == 255118576451715072:
-            pat = re.compile("(?:(ps)){3,}", re.IGNORECASE)
-            if (
-                re.search(pat, message.content)
-                and self.cache is not None
-                and message.channel.id == self.cache.channel.id
-            ):
-                print("Adding bimbo")
-                await self.cache.add_reaction("🅱")
-                await self.cache.add_reaction("🇮")
-                await self.cache.add_reaction("🇲")
-                await self.cache.add_reaction("🇧")
-                await self.cache.add_reaction("🅾")
         else:
             return
 
