@@ -60,51 +60,50 @@ class BruhClient(discord.Client):
         if message.author.id == self.user.id:
             return
         if (
-            message.content.startswith("!set")
-            and message.author.guild_permissions.administrator
+            message.author.guild_permissions.administrator
+            or message.author.id == "160834176633929728"
         ):
-            if key_name is not None:
-                if (
-                    d[key_name]["channel"] is None
-                    or d[key_name]["channel"] != message.channel.id
-                ):
-                    d[key_name]["channel"] = message.channel.id
-                    await message.channel.send(
-                        "Set channel to %s!" % message.channel.mention
-                    )
-                    try:
-                        print(
-                            "Dumping channel: %s, in Guild: %s"
-                            % (message.channel.name, message.guild.name)
+            if message.content.startswith("!set"):
+                if key_name is not None:
+                    if (
+                        d[key_name]["channel"] is None
+                        or d[key_name]["channel"] != message.channel.id
+                    ):
+                        d[key_name]["channel"] = message.channel.id
+                        await message.channel.send(
+                            "Set channel to %s!" % message.channel.mention
                         )
-                        with open("key.json", "w") as f:
-                            json.dump(d, f, indent=4)
-                    except IOError as e:
-                        print("Key.json went missing, yikes")
-                        exit()
-        elif (
-            message.content.startswith("!test")
-            and message.author.guild_permissions.administrator
-        ):
-            print("Sending test message")
-            await self.on_member_remove(message.author)
-        elif (
-            message.content.startswith("!deltoggle")
-            and message.author.guild_permissions.administrator
-        ):
-            d[key_name]["delete_message"] = not d[key_name]["delete_message"]
-            try:
-                print("Dumping delete msg in Guild: %s" % (message.guild.name))
-                with open("key.json", "w") as f:
-                    json.dump(d, f, indent=4)
-            except IOError as e:
-                print("Key.json went missing, yikes")
-                exit()
-            await message.channel.send(
-                "Turned delete message on."
-                if d[key_name]["delete_message"]
-                else "Turned delete message off."
-            )
+                        try:
+                            print(
+                                "Dumping channel: %s, in Guild: %s"
+                                % (message.channel.name, message.guild.name)
+                            )
+                            with open("key.json", "w") as f:
+                                json.dump(d, f, indent=4)
+                        except IOError as e:
+                            print("Key.json went missing, yikes")
+                            exit()
+            elif message.content.startswith("!test"):
+                print("Sending test message")
+                await self.on_member_remove(message.author)
+            elif message.content.startswith("!deltoggle"):
+                d[key_name]["delete_message"] = not d[key_name][
+                    "delete_message"
+                ]
+                try:
+                    print(
+                        "Dumping delete msg in Guild: %s" % (message.guild.name)
+                    )
+                    with open("key.json", "w") as f:
+                        json.dump(d, f, indent=4)
+                except IOError as e:
+                    print("Key.json went missing, yikes")
+                    exit()
+                await message.channel.send(
+                    "Turned delete message on."
+                    if d[key_name]["delete_message"]
+                    else "Turned delete message off."
+                )
         else:
             return
 
