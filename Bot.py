@@ -1,6 +1,6 @@
 import json, discord, random, re
 
-VERSION = "0.2.7"
+VERSION = "0.3.0"
 print("BruhBot Version: %s" % VERSION)
 
 
@@ -104,18 +104,18 @@ class BruhClient(discord.Client):
                     if d[key_name]["delete_message"]
                     else "Turned delete message off."
                 )
-        elif message.content.startswith("!bruh"):
-            await message.channel.send("%s bruh" % message.author.mention())
+        if message.content.startswith("!bruh"):
+            await message.channel.send("%s bruh" % message.author.mention)
         elif message.content.startswith("!bhelp"):
             await message.channel.send(
                 """Hi I'm BruhBot!
-            My commands are:
-            ```!bhelp:      sends this message.
-            !bruh:       sends bruh back.
-            !set*:       sets the channel to send leave messages to.
-            !deltoggle*: toggles message delete messages.
-            !test*:      sends a test message.```
-            * admin only commands"""
+My commands are:
+```!bhelp: sends this message.
+!bruh: sends bruh back.
+!set*: sets the channel to send leave messages to.
+!deltoggle*: toggles message delete messages.
+!test*: sends a test message.```
+* admin only commands"""
             )
         else:
             return
