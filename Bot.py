@@ -1,6 +1,6 @@
 import json, discord, random, re
 
-VERSION = "0.3.0"
+VERSION = "0.3.1"
 print("BruhBot Version: %s" % VERSION)
 
 
@@ -61,7 +61,7 @@ class BruhClient(discord.Client):
             return
         if (
             message.author.guild_permissions.administrator
-            or message.author.id == "160834176633929728"
+            or message.author.id == d[admin_id]
         ):
             if message.content.startswith("!set"):
                 if key_name is not None:

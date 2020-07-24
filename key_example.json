@@ -1,3 +1,4 @@
 {
-    "token": "YOUR_TOKEN_HERE"
+    "token": "YOUR_TOKEN_HERE",
+    "admin_id": "YOUR_USER_ID_HERE"
 }
