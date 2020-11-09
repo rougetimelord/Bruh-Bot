@@ -61,7 +61,7 @@ class BruhClient(discord.Client):
             return
         if (
             message.author.guild_permissions.administrator
-            or message.author.id == d[admin_id]
+            or message.author.id == d["admin_id"]
         ):
             if message.content.startswith("!set"):
                 if key_name is not None:
