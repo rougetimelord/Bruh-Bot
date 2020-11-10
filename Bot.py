@@ -1,6 +1,6 @@
 import json, discord, random, re
 
-VERSION = "0.3.3"
+VERSION = "0.3.4"
 print("BruhBot Version: %s" % VERSION)
 
 
@@ -133,6 +133,7 @@ My commands are:
 
 intents = discord.Intents.default()
 intents.members = True
+intents.presences = True
 client = BruhClient(intents=intents)
 try:
     with open("key.json", "r") as f:
