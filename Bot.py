@@ -1,6 +1,8 @@
 import json, discord, random, re
 
-VERSION = "0.3.4"
+from discord import message
+
+VERSION = "0.3.5"
 print("BruhBot Version: %s" % VERSION)
 
 
@@ -131,7 +133,14 @@ My commands are:
             await channel.send("bruh" if random.randint(0, 1) == 0 else "Bruh")
 
 
-intents = discord.Intents.default()
+intents = discord.Intents(
+    members=True,
+    presences=True,
+    bans=True,
+    guilds=True,
+    messages=True,
+    reactions=True,
+)
 intents.members = True
 intents.presences = True
 client = BruhClient(intents=intents)
