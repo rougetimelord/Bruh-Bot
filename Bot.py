@@ -2,6 +2,7 @@ import json
 import discord
 import random
 import logging
+import asyncio
 
 import Set
 import re
@@ -225,8 +226,8 @@ My commands are:
         if id == None:
             return
         channel = self.get_channel(id)
-        channel.purge(limit=5000, bulk=True)
-        channel.send("Purged channel")
+        asyncio.run(channel.purge(limit=5000, bulk=True))
+        asyncio.run(channel.send("Purged channel"))
 
     async def on_member_remove(self, member):
         key_name = await self.get_key(member.guild)
