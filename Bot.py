@@ -7,7 +7,7 @@ import Set
 import re
 
 VERSION = "1.1.0"
-print("BruhBot Version: %s" % VERSION)
+print(f"BruhBot Version: {VERSION}")
 log = logging.getLogger()
 
 
