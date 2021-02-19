@@ -3,13 +3,10 @@ import discord
 import random
 import logging
 import asyncio
-
 import Set
 import re
 
-VERSION = "1.1.0"
 log = logging.getLogger()
-log.info(f"BruhBot Version: {VERSION}")
 
 
 class BruhClient(discord.Client):
@@ -242,6 +239,13 @@ My commands are:
             )
             await channel.send("bruh" if random.randint(0, 1) == 0 else "Bruh")
 
+
+logging.basicConfig(
+    format="[%(asctime)s - %(name)s - %(lineno)3d][%(levelname)s] %(message)s",
+    level=logging.INFO,
+)
+VERSION = "1.1.0"
+log.info(f"BruhBot Version: {VERSION}")
 
 intents = discord.Intents(
     members=True,
