@@ -7,6 +7,7 @@ import Set
 import re
 
 log = logging.getLogger()
+VERSION = "1.1.2"
 
 
 class BruhClient(discord.Client):
@@ -176,10 +177,15 @@ class BruhClient(discord.Client):
 
             elif message.content.startswith("!changeWipe"):
                 if self.servers[key_name]["disappearing"]:
-                    time = re.match(r"(?:\d*\.){0,1}\d+", message.content)
+                    time = re.search(
+                        "(?:\d*\.){0,1}\d+", message.content
+                    ).group()
 
                     if not time == None:
                         time = float(time)
+                        await message.channel.send(
+                            "Updated the time to {} day(s)".format(time)
+                        )
                     else:
                         log.warning("No time provided")
                         await message.channel.send(
@@ -241,10 +247,8 @@ My commands are:
 
 
 logging.basicConfig(
-    format="[%(asctime)s - %(name)s - %(lineno)3d][%(levelname)s] %(message)s",
-    level=logging.INFO,
+    format="[%(name)s][%(levelname)s] %(message)s", level=logging.INFO,
 )
-VERSION = "1.1.0"
 log.info(f"BruhBot Version: {VERSION}")
 
 intents = discord.Intents(
