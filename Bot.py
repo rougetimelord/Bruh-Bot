@@ -8,8 +8,8 @@ import Set
 import re
 
 VERSION = "1.1.0"
-print(f"BruhBot Version: {VERSION}")
 log = logging.getLogger()
+log.info(f"BruhBot Version: {VERSION}")
 
 
 class BruhClient(discord.Client):
