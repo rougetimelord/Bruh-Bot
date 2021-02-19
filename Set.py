@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 class Interval:
     """A class that loops every interval."""
 
-    def __init__(self, interval, action) -> None:
+    def __init__(self, interval, action, id=None) -> None:
         """Initialize the interval loop.
         Args:
             interval (float): The interval in seconds.
@@ -17,6 +17,8 @@ class Interval:
         """
         self.interval = interval
         self.action = action
+
+        self.id = id
 
         self.stop = threading.Event()
 
@@ -29,7 +31,7 @@ class Interval:
         while not self.stop.wait(next - time.time()):
             next += self.interval
             try:
-                self.action()
+                self.action(self.id)
             except OSError as e:
                 log.exception(e)
                 pass
