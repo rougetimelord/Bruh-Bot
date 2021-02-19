@@ -2,9 +2,11 @@ import json
 import discord
 import random
 import logging
-import Set
 
-VERSION = "1.0.0"
+import Set
+import re
+
+VERSION = "1.1.0"
 print("BruhBot Version: %s" % VERSION)
 log = logging.getLogger()
 
@@ -23,7 +25,7 @@ class BruhClient(discord.Client):
             )
         )
 
-        self.servers = {"servers": []}
+        self.servers = {}
         try:
             with open("servers.json", "r") as f:
                 self.servers = json.load(f)
@@ -31,6 +33,14 @@ class BruhClient(discord.Client):
             log.exception("No server file yet")
             with open("servers.json", "w+") as f:
                 json.dump(self.servers, f)
+
+        self.intervals = {}
+
+        for id, value in self.servers.items():
+            if value["disappearing"]:
+                self.intervals[id] = Set.Interval(
+                    value["wipe_time"], self.wipe, id=value["wipe_channel"]
+                )
 
     async def on_guild_join(self, guild):
         log.info("Joined guild: {}".format(guild.name))
@@ -103,9 +113,11 @@ class BruhClient(discord.Client):
                         except IOError as e:
                             log.error("Servers.json went missing, yikes")
                             exit()
+
             elif message.content.startswith("!test"):
                 log.info("Sending test message")
                 await self.on_member_remove(message.author)
+
             elif message.content.startswith("!deltoggle"):
                 self.servers[key_name]["delete_message"] = not self.servers[
                     key_name
@@ -124,6 +136,75 @@ class BruhClient(discord.Client):
                     if self.servers[key_name]["delete_message"]
                     else "Turned delete message off."
                 )
+
+            elif message.content.startswith("!disappearing"):
+                await message.channel.send(
+                    "Turning channel wipes on."
+                    if not self.servers[key_name]["disappearing"]
+                    else "Turning channel wipes off."
+                )
+
+                if self.servers[key_name]["disappearing"]:
+                    self.servers[key_name]["disappearing"] = False
+                    self.intervals[key_name].cancel()
+                else:
+                    self.servers[key_name]["disappearing"] = True
+                    self.servers[key_name]["wipe_channel"] = message.channel.id
+                    time = re.match(r"(?:\d*\.){0,1}\d+", message.content)
+
+                    if not time == None:
+                        time = float(time)
+                    else:
+                        log.warning("No time provided")
+                        await message.channel.send(
+                            "No time provided, defaulting to 12 hours"
+                        )
+                        time = 0.5
+
+                    # * hours * minutes * seconds
+                    time *= 24 * 60 * 60
+                    self.servers[key_name]["wipe_time"] = time
+
+                    self.intervals[key_name] = Set.Interval(
+                        time, self.wipe, message.channel.id
+                    )
+                try:
+                    log.info("Dumping disappearing messages")
+                    with open("servers.json", "w") as f:
+                        json.dump(self.servers, f, indent=4)
+                except IOError as e:
+                    log.error("Servers.json went missing, yikes")
+                    exit()
+
+            elif message.content.startswith("!changeWipe"):
+                if self.servers[key_name]["disappearing"]:
+                    time = re.match(r"(?:\d*\.){0,1}\d+", message.content)
+
+                    if not time == None:
+                        time = float(time)
+                    else:
+                        log.warning("No time provided")
+                        await message.channel.send(
+                            "No time provided, defaulting to 12 hours"
+                        )
+                        time = 0.5
+
+                    # * hours * minutes * seconds
+                    time *= 24 * 60 * 60
+                    self.servers[key_name]["wipe_time"] = time
+
+                    self.intervals[key_name].cancel()
+                    self.intervals[key_name] = Set.Interval(
+                        time, self.wipe, message.channel.id
+                    )
+                    try:
+                        log.info("Dumping disappearing messages")
+                        with open("servers.json", "w") as f:
+                            json.dump(self.servers, f, indent=4)
+                    except IOError as e:
+                        log.error("Servers.json went missing, yikes")
+                        exit()
+
         if message.content.startswith("!bruh"):
             await message.channel.send("%s bruh" % message.author.mention)
         elif message.content.startswith("!bhelp"):
@@ -139,6 +220,13 @@ My commands are:
             )
         else:
             return
+
+    def wipe(self, id):
+        if id == None:
+            return
+        channel = self.get_channel(id)
+        channel.purge(limit=5000, bulk=True)
+        channel.send("Purged channel")
 
     async def on_member_remove(self, member):
         key_name = await self.get_key(member.guild)
