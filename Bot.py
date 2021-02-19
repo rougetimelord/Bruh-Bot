@@ -1,15 +1,18 @@
-import json, discord, random, re
+import json, discord, random, logging
 
 VERSION = "0.3.5"
 print("BruhBot Version: %s" % VERSION)
+log = logging.getLogger()
 
 
 class BruhClient(discord.Client):
     async def get_key(self, guild):
-        return "%s" % guild.id if (guild is not None) else None
+        return f"{guild.id}" if (guild is not None) else None
 
     async def on_ready(self):
-        print("Logged in as %s, with ID %s" % (self.user.name, self.user.id))
+        log.info(
+            "Logged in as {}, with ID {}".format(self.user.name, self.user.id)
+        )
         await self.change_presence(
             activity=discord.Activity(
                 name="for bruh moments", type=discord.ActivityType.watching
@@ -18,32 +21,36 @@ class BruhClient(discord.Client):
         self.cache = None
 
     async def on_guild_join(self, guild):
-        print("Joined guild: %s" % guild.name)
+        log.info("Joined guild: {}".format(guild.name))
         if guild.system_channel is not None:
             await guild.system_channel.send(
                 "Hi, thanks for adding BruhBot! Use `!set` to set which channel to send to."
             )
-        d[self.get_key(guild)] = {"channel": None, "delete_message": False}
+        keys[self.get_key(guild)] = {
+            "channel": None,
+            "delete_message": False,
+            "disappearing": False,
+        }
 
     async def on_guild_remove(self, guild):
-        print("Removed from guild: %s" % guild.name)
-        d.pop(await self.get_key(guild), None)
+        log.info("Removed from guild: %s" % guild.name)
+        keys.pop(await self.get_key(guild), None)
         try:
             with open("key.json", "w") as f:
-                json.dump(d, f, indent=4)
+                json.dump(keys, f, indent=4)
         except IOError as e:
-            print("Key.json went missing, yikes")
+            log.error("Key.json went missing, yikes")
             exit()
 
     async def on_message_delete(self, message):
-        print("Message deletion noticed")
-        if d[await self.get_key(message.guild)]["delete_message"]:
+        log.info("Message deletion noticed")
+        if keys[await self.get_key(message.guild)]["delete_message"]:
             async for entry in message.guild.audit_logs(limit=10):
                 if (
                     entry.action == discord.AuditLogAction.message_delete
                     and entry.target.id == message.author.id
                 ):
-                    print("Sending a delete message")
+                    log.info("Sending a delete message")
                     user_string = (
                         message.author.mention
                         if message.author.mention is not None
@@ -55,53 +62,53 @@ class BruhClient(discord.Client):
                     break
 
     async def on_message(self, message):
-        print("Message event dispatched")
+        log.info("Message event dispatched")
         key_name = await self.get_key(message.guild)
         if message.author.id == self.user.id:
             return
         if (
             message.author.guild_permissions.administrator
-            or message.author.id == d["admin_id"]
+            or message.author.id == keys["admin_id"]
         ):
             if message.content.startswith("!set"):
                 if key_name is not None:
                     if (
-                        d[key_name]["channel"] is None
-                        or d[key_name]["channel"] != message.channel.id
+                        keys[key_name]["channel"] is None
+                        or keys[key_name]["channel"] != message.channel.id
                     ):
-                        d[key_name]["channel"] = message.channel.id
+                        keys[key_name]["channel"] = message.channel.id
                         await message.channel.send(
                             "Set channel to %s!" % message.channel.mention
                         )
                         try:
-                            print(
+                            log.info(
                                 "Dumping channel: %s, in Guild: %s"
                                 % (message.channel.name, message.guild.name)
                             )
                             with open("key.json", "w") as f:
-                                json.dump(d, f, indent=4)
+                                json.dump(keys, f, indent=4)
                         except IOError as e:
-                            print("Key.json went missing, yikes")
+                            log.error("Key.json went missing, yikes")
                             exit()
             elif message.content.startswith("!test"):
-                print("Sending test message")
+                log.info("Sending test message")
                 await self.on_member_remove(message.author)
             elif message.content.startswith("!deltoggle"):
-                d[key_name]["delete_message"] = not d[key_name][
+                keys[key_name]["delete_message"] = not keys[key_name][
                     "delete_message"
                 ]
                 try:
-                    print(
+                    log.info(
                         "Dumping delete msg in Guild: %s" % (message.guild.name)
                     )
                     with open("key.json", "w") as f:
-                        json.dump(d, f, indent=4)
+                        json.dump(keys, f, indent=4)
                 except IOError as e:
-                    print("Key.json went missing, yikes")
+                    log.error("Key.json went missing, yikes")
                     exit()
                 await message.channel.send(
                     "Turned delete message on."
-                    if d[key_name]["delete_message"]
+                    if keys[key_name]["delete_message"]
                     else "Turned delete message off."
                 )
         if message.content.startswith("!bruh"):
@@ -122,9 +129,9 @@ My commands are:
 
     async def on_member_remove(self, member):
         key_name = await self.get_key(member.guild)
-        if key_name is not None and d[key_name]["channel"] is not None:
-            channel = self.get_channel(d[key_name]["channel"])
-            print(
+        if key_name is not None and keys[key_name]["channel"] is not None:
+            channel = self.get_channel(keys[key_name]["channel"])
+            log.info(
                 "Sending message in channel: %s of Guild: %s"
                 % (channel.name, member.guild.name)
             )
@@ -144,7 +151,7 @@ intents.presences = True
 client = BruhClient(intents=intents)
 try:
     with open("key.json", "r") as f:
-        d = json.load(f)
-        client.run(d["token"])
+        keys = json.load(f)
+        client.run(keys["token"])
 except IOError as e:
     print("Key not provided, exitting")
