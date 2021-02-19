@@ -27,7 +27,7 @@ class Interval:
 
     def _setInterval(self) -> None:
         """Does things."""
-        next = time.time()
+        next = time.time() + self.interval
         while not self.stop.wait(next - time.time()):
             next += self.interval
             try:
