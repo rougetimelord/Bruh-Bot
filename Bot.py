@@ -7,7 +7,7 @@ import Set
 import re
 
 log = logging.getLogger()
-VERSION = "1.1.2"
+VERSION = "1.1.3"
 
 
 class BruhClient(discord.Client):
@@ -78,7 +78,7 @@ class BruhClient(discord.Client):
                         else message.author.name + message.author.discriminator
                     )
                     await message.channel.send(
-                        "%s had a bruh moment" % user_string
+                        "{user_string} had a bruh moment"
                     )
                     break
 
@@ -100,12 +100,11 @@ class BruhClient(discord.Client):
                     ):
                         self.servers[key_name]["channel"] = message.channel.id
                         await message.channel.send(
-                            "Set channel to %s!" % message.channel.mention
+                            "Set channel to {message.channel.mention}!"
                         )
                         try:
                             log.info(
-                                "Dumping channel: %s, in Guild: %s"
-                                % (message.channel.name, message.guild.name)
+                                "Dumping channel: {message.channel.name}, in Guild: {message.guild.name}"
                             )
                             with open("servers.json", "w") as f:
                                 json.dump(self.servers, f, indent=4)
@@ -123,7 +122,7 @@ class BruhClient(discord.Client):
                 ]["delete_message"]
                 try:
                     log.info(
-                        "Dumping delete msg in Guild: %s" % (message.guild.name)
+                        "Dumping delete msg in Guild: {message.guild.name}"
                     )
                     with open("servers.json", "w") as f:
                         json.dump(self.servers, f, indent=4)
@@ -184,7 +183,7 @@ class BruhClient(discord.Client):
                     if not time == None:
                         time = float(time)
                         await message.channel.send(
-                            "Updated the time to {} day(s)".format(time)
+                            "Updated the time to {time} day(s)"
                         )
                     else:
                         log.warning("No time provided")
@@ -210,7 +209,7 @@ class BruhClient(discord.Client):
                         exit()
 
         if message.content.startswith("!bruh"):
-            await message.channel.send("%s bruh" % message.author.mention)
+            await message.channel.send("{message.author.mention} bruh")
         elif message.content.startswith("!bhelp"):
             await message.channel.send(
                 """Hi I'm BruhBot!
@@ -219,7 +218,9 @@ My commands are:
 !bruh: sends bruh back.
 !set*: sets the channel to send leave messages to.
 !deltoggle*: toggles message delete messages.
-!test*: sends a test message.```
+!test*: sends a test message.
+!disappearing* {time in days}: sets the channel that the message is sent in as a wipe channel, which wipes every x days
+!changeWipe* {time in days}: changes how often the channel is wiped```
 * admin only commands"""
             )
         else:
@@ -240,8 +241,7 @@ My commands are:
         ):
             channel = self.get_channel(self.servers[key_name]["channel"])
             log.info(
-                "Sending message in channel: %s of Guild: %s"
-                % (channel.name, member.guild.name)
+                "Sending message in channel: {channel.name} of Guild: {member.guild.name}"
             )
             await channel.send("bruh" if random.randint(0, 1) == 0 else "Bruh")
 
