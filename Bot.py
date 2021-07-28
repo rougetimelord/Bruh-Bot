@@ -7,7 +7,7 @@ import Set
 import re
 
 log = logging.getLogger()
-VERSION = "1.1.3"
+VERSION = "1.1.4"
 
 
 class BruhClient(discord.Client):
@@ -15,9 +15,7 @@ class BruhClient(discord.Client):
         return f"{guild.id}" if (guild is not None) else None
 
     async def on_ready(self):
-        log.info(
-            "Logged in as {}, with ID {}".format(self.user.name, self.user.id)
-        )
+        log.info(f"Logged in as {self.user.name}, with ID {self.user.id}")
         await self.change_presence(
             activity=discord.Activity(
                 name="for bruh moments", type=discord.ActivityType.watching
@@ -78,7 +76,7 @@ class BruhClient(discord.Client):
                         else message.author.name + message.author.discriminator
                     )
                     await message.channel.send(
-                        "{user_string} had a bruh moment"
+                        f"{user_string} had a bruh moment"
                     )
                     break
 
@@ -100,11 +98,11 @@ class BruhClient(discord.Client):
                     ):
                         self.servers[key_name]["channel"] = message.channel.id
                         await message.channel.send(
-                            "Set channel to {message.channel.mention}!"
+                            f"Set channel to {message.channel.mention}!"
                         )
                         try:
                             log.info(
-                                "Dumping channel: {message.channel.name}, in Guild: {message.guild.name}"
+                                f"Dumping channel: {message.channel.name}, in Guild: {message.guild.name}"
                             )
                             with open("servers.json", "w") as f:
                                 json.dump(self.servers, f, indent=4)
@@ -122,7 +120,7 @@ class BruhClient(discord.Client):
                 ]["delete_message"]
                 try:
                     log.info(
-                        "Dumping delete msg in Guild: {message.guild.name}"
+                        f"Dumping delete msg in Guild: {message.guild.name}"
                     )
                     with open("servers.json", "w") as f:
                         json.dump(self.servers, f, indent=4)
@@ -183,7 +181,7 @@ class BruhClient(discord.Client):
                     if not time == None:
                         time = float(time)
                         await message.channel.send(
-                            "Updated the time to {time} day(s)"
+                            f"Updated the time to {time} day(s)"
                         )
                     else:
                         log.warning("No time provided")
@@ -209,7 +207,7 @@ class BruhClient(discord.Client):
                         exit()
 
         if message.content.startswith("!bruh"):
-            await message.channel.send("{message.author.mention} bruh")
+            await message.channel.send(f"{message.author.mention} bruh")
         elif message.content.startswith("!bhelp"):
             await message.channel.send(
                 """Hi I'm BruhBot!
@@ -241,7 +239,7 @@ My commands are:
         ):
             channel = self.get_channel(self.servers[key_name]["channel"])
             log.info(
-                "Sending message in channel: {channel.name} of Guild: {member.guild.name}"
+                f"Sending message in channel: {channel.name} of Guild: {member.guild.name}"
             )
             await channel.send("bruh" if random.randint(0, 1) == 0 else "Bruh")
 
