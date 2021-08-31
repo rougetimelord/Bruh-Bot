@@ -1,14 +1,10 @@
-import json
 import discord
-import random
-import logging
-import asyncio
-import Set
-import re
+import random, Set, re, json
+import logging, asyncio
 from cachetools import TTLCache
 
 log = logging.getLogger()
-VERSION = "1.2.0"
+VERSION = "1.2.1"
 
 
 class BruhClient(discord.Client):
