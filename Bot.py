@@ -4,7 +4,7 @@ import logging, asyncio
 from cachetools import TTLCache
 
 log = logging.getLogger()
-VERSION = "1.2.1"
+VERSION = "1.2.2"
 
 
 class BruhClient(discord.Client):
@@ -249,7 +249,8 @@ My commands are:
 
 
 logging.basicConfig(
-    format="[%(name)s][%(levelname)s] %(message)s", level=logging.INFO,
+    format="[%(name)s][%(levelname)s] %(message)s",
+    level=logging.INFO,
 )
 log.info(f"BruhBot Version: {VERSION}")
 
