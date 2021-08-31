@@ -5,9 +5,10 @@ import logging
 import asyncio
 import Set
 import re
+from cachetools import TTLCache
 
 log = logging.getLogger()
-VERSION = "1.1.4"
+VERSION = "1.2.0"
 
 
 class BruhClient(discord.Client):
@@ -22,6 +23,7 @@ class BruhClient(discord.Client):
             )
         )
 
+        self.minuteCache = TTLCache(maxsize=100, ttl=60)
         self.servers = {}
         try:
             with open("servers.json", "r") as f:
@@ -231,6 +233,9 @@ My commands are:
         asyncio.run(channel.purge(limit=5000, bulk=True))
         asyncio.run(channel.send("Purged channel"))
 
+    async def on_member_join(self, member):
+        self.minuteCache[member.id] = 1
+
     async def on_member_remove(self, member):
         key_name = await self.get_key(member.guild)
         if (
@@ -241,6 +246,9 @@ My commands are:
             log.info(
                 f"Sending message in channel: {channel.name} of Guild: {member.guild.name}"
             )
+            if member.id in self.minuteCache.keys():
+                await channel.send("BRUH")
+                return
             await channel.send("bruh" if random.randint(0, 1) == 0 else "Bruh")
 
 
