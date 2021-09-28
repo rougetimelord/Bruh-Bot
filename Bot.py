@@ -270,9 +270,7 @@ def main():
                 messages=True,
                 reactions=True,
             )
-            intents.members = True
-            intents.presences = True
-            client = BruhClient(intents=intents, keys=keys)
+            client: discord.Client = BruhClient(intents=intents, keys=keys)
             client.run(keys["token"])
     except IOError as e:
         print("Key not provided, exitting")
