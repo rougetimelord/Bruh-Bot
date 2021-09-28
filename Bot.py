@@ -9,9 +9,9 @@ VERSION = "1.2.2"
 
 
 class BruhClient(discord.Client):
-    def __init__(self, *kwargs, keys={}) -> None:
-        self.keys = keys
-        super(*kwargs).__init__()
+    def __init__(self, **kwargs) -> None:
+        self.keys = kwargs["keys"]
+        super().__init__(**kwargs)
 
     async def get_key(self, guild: discord.Guild) -> str:
         return f"{guild.id}" if (guild is not None) else None
