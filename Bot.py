@@ -8,6 +8,10 @@ VERSION = "1.2.2"
 
 
 class BruhClient(discord.Client):
+    def __init__(self, *kwargs, keys={}) -> None:
+        self.keys = keys
+        super(*kwargs).__init__()
+
     async def get_key(self, guild):
         return f"{guild.id}" if (guild is not None) else None
 
@@ -85,7 +89,7 @@ class BruhClient(discord.Client):
             return
         if (
             message.author.guild_permissions.administrator
-            or message.author.id == keys["admin_id"]
+            or message.author.id == self.keys["admin_id"]
         ):
             if message.content.startswith("!set"):
                 if key_name is not None:
@@ -255,20 +259,20 @@ def main():
     )
     log.info(f"BruhBot Version: {VERSION}")
 
-    intents = discord.Intents(
-        members=True,
-        presences=True,
-        bans=True,
-        guilds=True,
-        messages=True,
-        reactions=True,
-    )
-    intents.members = True
-    intents.presences = True
-    client = BruhClient(intents=intents)
     try:
         with open("key.json", "r") as f:
             keys = json.load(f)
+            intents = discord.Intents(
+                members=True,
+                presences=True,
+                bans=True,
+                guilds=True,
+                messages=True,
+                reactions=True,
+            )
+            intents.members = True
+            intents.presences = True
+            client = BruhClient(intents=intents, keys=keys)
             client.run(keys["token"])
     except IOError as e:
         print("Key not provided, exitting")
