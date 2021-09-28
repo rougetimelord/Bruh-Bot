@@ -2,6 +2,7 @@ import discord
 import random, Set, re, json
 import logging, asyncio
 from cachetools import TTLCache
+from typing import Dict
 
 log = logging.getLogger()
 VERSION = "1.2.2"
@@ -12,7 +13,7 @@ class BruhClient(discord.Client):
         self.keys = keys
         super(*kwargs).__init__()
 
-    async def get_key(self, guild):
+    async def get_key(self, guild: discord.Guild) -> str:
         return f"{guild.id}" if (guild is not None) else None
 
     async def on_ready(self):
@@ -24,7 +25,7 @@ class BruhClient(discord.Client):
         )
 
         self.minuteCache = TTLCache(maxsize=100, ttl=60)
-        self.servers = {}
+        self.servers: Dict[str, str] = {}
         try:
             with open("servers.json", "r") as f:
                 self.servers = json.load(f)
@@ -33,7 +34,7 @@ class BruhClient(discord.Client):
             with open("servers.json", "w+") as f:
                 json.dump(self.servers, f)
 
-        self.intervals = {}
+        self.intervals: Dict[str, Set.Interval] = {}
 
         for id, value in self.servers.items():
             if value["disappearing"]:
@@ -41,7 +42,7 @@ class BruhClient(discord.Client):
                     value["wipe_time"], self.wipe, id=value["wipe_channel"]
                 )
 
-    async def on_guild_join(self, guild):
+    async def on_guild_join(self, guild: discord.Guild):
         log.info("Joined guild: {}".format(guild.name))
         if guild.system_channel is not None:
             await guild.system_channel.send(
@@ -53,7 +54,7 @@ class BruhClient(discord.Client):
             "disappearing": False,
         }
 
-    async def on_guild_remove(self, guild):
+    async def on_guild_remove(self, guild: discord.Guild):
         log.info("Removed from guild: %s" % guild.name)
         self.servers.pop(await self.get_key(guild), None)
         try:
@@ -63,7 +64,7 @@ class BruhClient(discord.Client):
             log.error("Servers.json went missing, yikes")
             exit()
 
-    async def on_message_delete(self, message):
+    async def on_message_delete(self, message: discord.Message):
         log.info("Message deletion noticed")
         if self.servers[await self.get_key(message.guild)]["delete_message"]:
             async for entry in message.guild.audit_logs(limit=10):
@@ -82,7 +83,7 @@ class BruhClient(discord.Client):
                     )
                     break
 
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message):
         log.info("Message event dispatched")
         key_name = await self.get_key(message.guild)
         if message.author.id == self.user.id:
@@ -229,20 +230,22 @@ My commands are:
     def wipe(self, id):
         if id == None:
             return
-        channel = self.get_channel(id)
+        channel: discord.abc.GuildChannel = self.get_channel(id)
         asyncio.run(channel.purge(limit=5000, bulk=True))
         asyncio.run(channel.send("Purged channel"))
 
-    async def on_member_join(self, member):
+    async def on_member_join(self, member: discord.Member):
         self.minuteCache[member.id] = 1
 
-    async def on_member_remove(self, member):
+    async def on_member_remove(self, member: discord.Member):
         key_name = await self.get_key(member.guild)
         if (
             key_name is not None
             and self.servers[key_name]["channel"] is not None
         ):
-            channel = self.get_channel(self.servers[key_name]["channel"])
+            channel: discord.abc.GuildChannel = self.get_channel(
+                self.servers[key_name]["channel"]
+            )
             log.info(
                 f"Sending message in channel: {channel.name} of Guild: {member.guild.name}"
             )
