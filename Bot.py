@@ -248,26 +248,31 @@ My commands are:
             await channel.send("bruh" if random.randint(0, 1) == 0 else "Bruh")
 
 
-logging.basicConfig(
-    format="[%(name)s][%(levelname)s] %(message)s",
-    level=logging.INFO,
-)
-log.info(f"BruhBot Version: {VERSION}")
+def main():
+    logging.basicConfig(
+        format="[%(name)s][%(levelname)s] %(message)s",
+        level=logging.INFO,
+    )
+    log.info(f"BruhBot Version: {VERSION}")
 
-intents = discord.Intents(
-    members=True,
-    presences=True,
-    bans=True,
-    guilds=True,
-    messages=True,
-    reactions=True,
-)
-intents.members = True
-intents.presences = True
-client = BruhClient(intents=intents)
-try:
-    with open("key.json", "r") as f:
-        keys = json.load(f)
-        client.run(keys["token"])
-except IOError as e:
-    print("Key not provided, exitting")
+    intents = discord.Intents(
+        members=True,
+        presences=True,
+        bans=True,
+        guilds=True,
+        messages=True,
+        reactions=True,
+    )
+    intents.members = True
+    intents.presences = True
+    client = BruhClient(intents=intents)
+    try:
+        with open("key.json", "r") as f:
+            keys = json.load(f)
+            client.run(keys["token"])
+    except IOError as e:
+        print("Key not provided, exitting")
+
+
+if __name__ == "__main__":
+    main()
