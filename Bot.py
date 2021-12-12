@@ -1,11 +1,13 @@
 import discord
 import random, Set, re, json
+
+from discord.client import Client
 import logging, asyncio
 from cachetools import TTLCache
 from typing import Dict
 
 log = logging.getLogger()
-VERSION = "1.2.2"
+VERSION = "1.2.3"
 
 
 class BruhClient(discord.Client):
@@ -13,7 +15,8 @@ class BruhClient(discord.Client):
         self.keys = kwargs["keys"]
         super().__init__(**kwargs)
 
-    async def get_key(self, guild: discord.Guild) -> str:
+    @staticmethod
+    async def get_key(guild: discord.Guild) -> str:
         return f"{guild.id}" if (guild is not None) else None
 
     async def on_ready(self):
@@ -48,7 +51,7 @@ class BruhClient(discord.Client):
             await guild.system_channel.send(
                 "Hi, thanks for adding BruhBot! Use `!set` to set which channel to send to."
             )
-        self.servers[self.get_key(guild)] = {
+        self.servers[BruhClient.get_key(guild)] = {
             "channel": None,
             "delete_message": False,
             "disappearing": False,
@@ -56,7 +59,7 @@ class BruhClient(discord.Client):
 
     async def on_guild_remove(self, guild: discord.Guild):
         log.info("Removed from guild: %s" % guild.name)
-        self.servers.pop(await self.get_key(guild), None)
+        self.servers.pop(await BruhClient.get_key(guild), None)
         try:
             with open("servers.json", "w") as f:
                 json.dump(self.servers, f, indent=4)
@@ -66,7 +69,9 @@ class BruhClient(discord.Client):
 
     async def on_message_delete(self, message: discord.Message):
         log.info("Message deletion noticed")
-        if self.servers[await self.get_key(message.guild)]["delete_message"]:
+        if self.servers[await BruhClient.get_key(message.guild)][
+            "delete_message"
+        ]:
             async for entry in message.guild.audit_logs(limit=10):
                 if (
                     entry.action == discord.AuditLogAction.message_delete
@@ -85,7 +90,7 @@ class BruhClient(discord.Client):
 
     async def on_message(self, message: discord.Message):
         log.info("Message event dispatched")
-        key_name = await self.get_key(message.guild)
+        key_name = await BruhClient.get_key(message.guild)
         if message.author.id == self.user.id:
             return
         if (
@@ -238,7 +243,7 @@ My commands are:
         self.minuteCache[member.id] = 1
 
     async def on_member_remove(self, member: discord.Member):
-        key_name = await self.get_key(member.guild)
+        key_name = await BruhClient.get_key(member.guild)
         if (
             key_name is not None
             and self.servers[key_name]["channel"] is not None
