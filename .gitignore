@@ -3,3 +3,5 @@ key.json
 servers.json
 
 __pycache__
+
+log.txt
