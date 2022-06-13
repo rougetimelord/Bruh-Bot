@@ -5,7 +5,7 @@ from cachetools import TTLCache
 from typing import Dict
 
 log = logging.getLogger()
-VERSION = "1.2.4"
+VERSION = "1.2.5"
 
 
 class BruhClient(discord.Client):
@@ -282,7 +282,7 @@ def main():
             client: discord.Client = BruhClient(intents=intents, keys=keys)
             client.run(keys["token"])
     except IOError as e:
-        print("Key not provided, exitting")
+        print("Key not provided, exiting")
 
 
 if __name__ == "__main__":
