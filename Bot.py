@@ -236,7 +236,7 @@ My commands are:
     def wipe(self, id):
         if id == None:
             return
-        channel: discord.abc.GuildChannel = self.get_channel(id)
+        channel: discord.TextChannel = self.get_channel(id)
         asyncio.run(channel.purge(limit=5000, bulk=True))
         asyncio.run(channel.send("Purged channel"))
 
@@ -249,7 +249,7 @@ My commands are:
             key_name is not None
             and self.servers[key_name]["channel"] is not None
         ):
-            channel: discord.abc.GuildChannel = self.get_channel(
+            channel: discord.TextChannel = self.get_channel(
                 self.servers[key_name]["channel"]
             )
             log.info(
@@ -286,7 +286,7 @@ def main():
             )
             client: discord.Client = BruhClient(intents=intents, keys=keys)
             client.run(keys["token"])
-    except IOError as e:
+    except IOError:
         print("Key not provided, exiting")
 
 
