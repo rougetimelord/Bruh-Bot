@@ -5,7 +5,7 @@ from cachetools import TTLCache
 from typing import Dict
 
 log = logging.getLogger()
-VERSION = "1.2.3"
+VERSION = "1.2.4"
 
 
 class BruhClient(discord.Client):
@@ -115,7 +115,8 @@ class BruhClient(discord.Client):
 
             elif message.content.startswith("!test"):
                 log.info("Sending test message")
-                await self.on_member_remove(message.author)
+                add = f"(latency: {self.latency}s)"
+                await self.on_member_remove(message.author, add)
 
             elif message.content.startswith("!deltoggle"):
                 self.servers[key_name]["delete_message"] = not self.servers[
@@ -237,7 +238,7 @@ My commands are:
     async def on_member_join(self, member: discord.Member):
         self.minuteCache[member.id] = 1
 
-    async def on_member_remove(self, member: discord.Member):
+    async def on_member_remove(self, member: discord.Member, addOn=""):
         key_name = await self.get_key(member.guild)
         if (
             key_name is not None
@@ -252,7 +253,11 @@ My commands are:
             if member.id in self.minuteCache.keys():
                 await channel.send("BRUH")
                 return
-            await channel.send("bruh" if random.randint(0, 1) == 0 else "Bruh")
+            await channel.send(
+                f"bruh {addOn}"
+                if random.randint(0, 1) == 0
+                else f"Bruh {addOn}"
+            )
 
 
 def main():
