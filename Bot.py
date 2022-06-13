@@ -1,5 +1,7 @@
 import discord
 import random, Set, re, json
+
+from discord.client import Client
 import logging, asyncio
 from cachetools import TTLCache
 from typing import Dict
