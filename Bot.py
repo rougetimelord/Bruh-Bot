@@ -5,7 +5,7 @@ from cachetools import TTLCache
 from typing import Dict
 
 log = logging.getLogger()
-VERSION = "1.2.2"
+VERSION = "1.2.3"
 
 
 class BruhClient(discord.Client):
@@ -257,8 +257,9 @@ My commands are:
 
 def main():
     logging.basicConfig(
-        format="[%(name)s][%(levelname)s] %(message)s",
+        format="{%(asctime)s} [%(name)s][%(levelname)s] %(message)s",
         level=logging.INFO,
+        handlers=[logging.FileHandler("log.txt"), logging.StreamHandler()],
     )
     log.info(f"BruhBot Version: {VERSION}")
 
