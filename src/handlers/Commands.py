@@ -175,22 +175,22 @@ async def help(message: discord.Message, prefix: str) -> None:
     )
     embed.add_field(
         name=f"{prefix}set",
-        value="Admin only - Sets where I'll say bruh when people leave",
+        value="*Admin only* - Sets where I'll say bruh when people leave",
         inline=False,
     )
     embed.add_field(
         name=f"{prefix}test",
-        value="Admin only - Simulates someone leaving, and gives my latency",
+        value="*Admin only* - Simulates someone leaving, and gives my latency",
         inline=False,
     )
     embed.add_field(
         name=f"{prefix}delToggle",
-        value="Admin only - Toggles whether I say something when I think someone had a message deleted by a mod",
+        value="*Admin only* - Toggles whether I say something when I think someone had a message deleted by a mod",
         inline=False,
     )
     embed.add_field(
         name=f"{prefix}changePrefix <new prefix>",
-        value="Admin only - Changes my command prefix. I'll pick the last part of the message that has a space in front of it.",
+        value="*Admin only* - Changes my command prefix. I'll pick the last part of the message that has a space in front of it.",
         inline=False,
     )
 
