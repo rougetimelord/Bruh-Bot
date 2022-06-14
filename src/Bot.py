@@ -198,7 +198,7 @@ def main():
                 messages=True,
                 reactions=True,
             )
-            client: discord.Client = BruhClient(intents=intents, keys=keys)
+            client: BruhClient = BruhClient(intents=intents, keys=keys)
             client.run(keys["token"])
     except (IOError, FileNotFoundError):
         print("Key not provided, exiting")
