@@ -1,13 +1,10 @@
-import discord
-import random, Set, re, json
-
-from discord.client import Client
-import logging, asyncio
+import discord, random, json, logging
+from . import handlers
 from cachetools import TTLCache
 from typing import Dict
 
 log = logging.getLogger()
-VERSION = "1.2.5"
+VERSION = "2.0.0"
 
 
 class BruhClient(discord.Client):
@@ -15,63 +12,88 @@ class BruhClient(discord.Client):
         self.keys = kwargs["keys"]
         super().__init__(**kwargs)
 
-    @staticmethod
-    async def get_key(guild: discord.Guild) -> str:
-        return f"{guild.id}" if (guild is not None) else None
+    # region Helpers
+    async def get_guild_entry(self, input) -> str:
+        if isinstance(input, discord.Guild):
+            return (
+                self.servers[str(input.id)]
+                if str(input.id) in self.servers
+                else None
+            )
+        elif isinstance(input, discord.Message) or isinstance(
+            input, discord.Member
+        ):
+            return (
+                self.servers[str(input.guild.id)]
+                if str(input.guild.id) in self.servers
+                else None
+            )
+        else:
+            return None
 
-    async def on_ready(self):
+    @staticmethod
+    async def check_admin(member: discord.Member) -> bool:
+        """Checks if a member is an admin in the guild
+
+        Args:
+            member (discord.Member): The member to check
+
+        Returns:
+            bool: If the member is an admin
+        """
+        return member.guild_permissions.administrator
+
+    async def check_owner(self, member: discord.Member) -> bool:
+        """Checks if a member is the bot's owner
+
+        Args:
+            member (discord.Member): The member to check
+
+        Returns:
+            bool: If the supplied member is bot owner
+        """
+        info = await self.application_info()
+        return info.owner.id == member.id
+
+    async def dump_json(self) -> None:
+        """Dump server data to file"""
+        try:
+            with open("data/servers.json", "w") as f:
+                json.dump(self.servers, f, indent=4)
+        except (IOError, FileNotFoundError):
+            log.error("Servers.json went missing, yikes")
+            with open("data/servers.json", "w+") as f:
+                json.dump(self.servers, f, indent=4)
+
+    # endregion
+
+    async def on_ready(self) -> None:
+        self.prefix: str = "!"
         log.info(f"Logged in as {self.user.name}, with ID {self.user.id}")
         await self.change_presence(
             activity=discord.Activity(
-                name="for bruh moments", type=discord.ActivityType.watching
+                name=f"for bruh moments | version: v{VERSION} | help: {self.prefix}bruhHelp",
+                type=discord.ActivityType.watching,
             )
         )
-
         self.minuteCache = TTLCache(maxsize=100, ttl=60)
         self.servers: Dict[str, str] = {}
         try:
-            with open("servers.json", "r") as f:
+            with open("data/servers.json", "r") as f:
                 self.servers = json.load(f)
         except FileNotFoundError as e:
             log.exception("No server file yet")
-            with open("servers.json", "w+") as f:
-                json.dump(self.servers, f)
-
-        self.intervals: Dict[str, Set.Interval] = {}
-
-        for id, value in self.servers.items():
-            if value["disappearing"]:
-                self.intervals[id] = Set.Interval(
-                    value["wipe_time"], self.wipe, id=value["wipe_channel"]
-                )
+            self.dump_json()
 
     async def on_guild_join(self, guild: discord.Guild):
-        log.info("Joined guild: {}".format(guild.name))
-        if guild.system_channel is not None:
-            await guild.system_channel.send(
-                "Hi, thanks for adding BruhBot! Use `!set` to set which channel to send to."
-            )
-        self.servers[BruhClient.get_key(guild)] = {
-            "channel": None,
-            "delete_message": False,
-            "disappearing": False,
-        }
+        await handlers.Membership.join(self, guild)
 
     async def on_guild_remove(self, guild: discord.Guild):
-        log.info("Removed from guild: %s" % guild.name)
-        self.servers.pop(await BruhClient.get_key(guild), None)
-        try:
-            with open("servers.json", "w") as f:
-                json.dump(self.servers, f, indent=4)
-        except IOError as e:
-            log.error("Servers.json went missing, yikes")
-            exit()
+        await handlers.Membership.remove(self, guild)
 
     async def on_message_delete(self, message: discord.Message):
         log.info("Message deletion noticed")
-        if self.servers[await BruhClient.get_key(message.guild)][
-            "delete_message"
-        ]:
+        if self.servers[await BruhClient.get_key(message)]["delete_message"]:
             async for entry in message.guild.audit_logs(limit=10):
                 if (
                     entry.action == discord.AuditLogAction.message_delete
@@ -90,161 +112,53 @@ class BruhClient(discord.Client):
 
     async def on_message(self, message: discord.Message):
         log.info("Message event dispatched")
-        key_name = await BruhClient.get_key(message.guild)
-        if message.author.id == self.user.id:
+        if message.author.bot:
             return
+
+        guild_entry: Dict[str, str] = await self.get_guild_entry(message)
+        if guild_entry == None:
+            log.warning(f"Failed to get guild entry for {message.guild.name}")
+            return
+
+        prefix = (
+            self.prefix
+            if not "prefix" in guild_entry
+            else guild_entry["prefix"]
+        )
+
+        if await BruhClient.check_admin(
+            message.author
+        ) or await self.check_owner(message.author):
+            if message.content.startswith(f"{prefix}set"):
+                await handlers.Commands.set(self, message, guild_entry)
+            elif message.content.startswith(f"{prefix}test"):
+                await handlers.Commands.test(self, message)
+            elif message.content.startswith(f"{prefix}delToggle"):
+                await handlers.Commands.delToggle(self, message, guild_entry)
+            elif message.content.startswith(
+                f"{prefix}changePrefix"
+            ) or message.content.startswith(f"{self.prefix}changePrefix"):
+                await handlers.Commands.changePrefix(
+                    self, message, guild_entry, prefix
+                )
+
         if (
-            message.author.guild_permissions.administrator
-            or message.author.id == self.keys["admin_id"]
+            message.content.startswith(f"{prefix}help")
+            or message.content.startswith(f"{prefix}bruhhelp")
+            or message.content.startswith(f"{self.prefix}help")
+            or message.content.startswith(f"{self.prefix}bruhHelp")
         ):
-            if message.content.startswith("!set"):
-                if key_name is not None:
-                    if (
-                        self.servers[key_name]["channel"] is None
-                        or self.servers[key_name]["channel"]
-                        != message.channel.id
-                    ):
-                        self.servers[key_name]["channel"] = message.channel.id
-                        await message.channel.send(
-                            f"Set channel to {message.channel.mention}!"
-                        )
-                        try:
-                            log.info(
-                                f"Dumping channel: {message.channel.name}, in Guild: {message.guild.name}"
-                            )
-                            with open("servers.json", "w") as f:
-                                json.dump(self.servers, f, indent=4)
-                        except IOError as e:
-                            log.error("Servers.json went missing, yikes")
-                            exit()
+            await handlers.Commands.help(message, prefix)
+        elif message.content.startswith("!bruh"):
+            await handlers.Commands.bruh(message)
 
-            elif message.content.startswith("!test"):
-                log.info("Sending test message")
-                add = f"(latency: {self.latency}s)"
-                await self.on_member_remove(message.author, add)
-
-            elif message.content.startswith("!deltoggle"):
-                self.servers[key_name]["delete_message"] = not self.servers[
-                    key_name
-                ]["delete_message"]
-                try:
-                    log.info(
-                        f"Dumping delete msg in Guild: {message.guild.name}"
-                    )
-                    with open("servers.json", "w") as f:
-                        json.dump(self.servers, f, indent=4)
-                except IOError as e:
-                    log.error("Servers.json went missing, yikes")
-                    exit()
-                await message.channel.send(
-                    "Turned delete message on."
-                    if self.servers[key_name]["delete_message"]
-                    else "Turned delete message off."
-                )
-
-            elif message.content.startswith("!disappearing"):
-                await message.channel.send(
-                    "Turning channel wipes on."
-                    if not self.servers[key_name]["disappearing"]
-                    else "Turning channel wipes off."
-                )
-
-                if self.servers[key_name]["disappearing"]:
-                    self.servers[key_name]["disappearing"] = False
-                    self.intervals[key_name].cancel()
-                else:
-                    self.servers[key_name]["disappearing"] = True
-                    self.servers[key_name]["wipe_channel"] = message.channel.id
-                    time = re.match(r"(?:\d*\.){0,1}\d+", message.content)
-
-                    if not time == None:
-                        time = float(time)
-                    else:
-                        log.warning("No time provided")
-                        await message.channel.send(
-                            "No time provided, defaulting to 12 hours"
-                        )
-                        time = 0.5
-
-                    # * hours * minutes * seconds
-                    time *= 24 * 60 * 60
-                    self.servers[key_name]["wipe_time"] = time
-
-                    self.intervals[key_name] = Set.Interval(
-                        time, self.wipe, message.channel.id
-                    )
-                try:
-                    log.info("Dumping disappearing messages")
-                    with open("servers.json", "w") as f:
-                        json.dump(self.servers, f, indent=4)
-                except IOError as e:
-                    log.error("Servers.json went missing, yikes")
-                    exit()
-
-            elif message.content.startswith("!changeWipe"):
-                if self.servers[key_name]["disappearing"]:
-                    time = re.search(
-                        "(?:\d*\.){0,1}\d+", message.content
-                    ).group()
-
-                    if not time == None:
-                        time = float(time)
-                        await message.channel.send(
-                            f"Updated the time to {time} day(s)"
-                        )
-                    else:
-                        log.warning("No time provided")
-                        await message.channel.send(
-                            "No time provided, defaulting to 12 hours"
-                        )
-                        time = 0.5
-
-                    # * hours * minutes * seconds
-                    time *= 24 * 60 * 60
-                    self.servers[key_name]["wipe_time"] = time
-
-                    self.intervals[key_name].cancel()
-                    self.intervals[key_name] = Set.Interval(
-                        time, self.wipe, message.channel.id
-                    )
-                    try:
-                        log.info("Dumping disappearing messages")
-                        with open("servers.json", "w") as f:
-                            json.dump(self.servers, f, indent=4)
-                    except IOError as e:
-                        log.error("Servers.json went missing, yikes")
-                        exit()
-
-        if message.content.startswith("!bruh"):
-            await message.channel.send(f"{message.author.mention} bruh")
-        elif message.content.startswith("!bhelp"):
-            await message.channel.send(
-                """Hi I'm BruhBot!
-My commands are:
-```!bhelp: sends this message.
-!bruh: sends bruh back.
-!set*: sets the channel to send leave messages to.
-!deltoggle*: toggles message delete messages.
-!test*: sends a test message.
-!disappearing* {time in days}: sets the channel that the message is sent in as a wipe channel, which wipes every x days
-!changeWipe* {time in days}: changes how often the channel is wiped```
-* admin only commands"""
-            )
-        else:
-            return
-
-    def wipe(self, id):
-        if id == None:
-            return
-        channel: discord.TextChannel = self.get_channel(id)
-        asyncio.run(channel.purge(limit=5000, bulk=True))
-        asyncio.run(channel.send("Purged channel"))
+        return
 
     async def on_member_join(self, member: discord.Member):
         self.minuteCache[member.id] = 1
 
     async def on_member_remove(self, member: discord.Member, addOn=""):
-        key_name = await BruhClient.get_key(member.guild)
+        key_name = await BruhClient.get_key(member)
         if (
             key_name is not None
             and self.servers[key_name]["channel"] is not None
@@ -274,7 +188,7 @@ def main():
     log.info(f"BruhBot Version: {VERSION}")
 
     try:
-        with open("key.json", "r") as f:
+        with open("data/key.json", "r") as f:
             keys = json.load(f)
             intents = discord.Intents(
                 members=True,
@@ -286,7 +200,7 @@ def main():
             )
             client: discord.Client = BruhClient(intents=intents, keys=keys)
             client.run(keys["token"])
-    except IOError:
+    except (IOError, FileNotFoundError):
         print("Key not provided, exiting")
 
 
