@@ -1,2 +1,2 @@
-import Commands
-import Membership
+from . import Commands
+from . import Membership
