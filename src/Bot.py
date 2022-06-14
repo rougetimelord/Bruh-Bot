@@ -67,6 +67,7 @@ class BruhClient(discord.Client):
 
     # endregion
 
+    # region Events
     async def on_ready(self) -> None:
         self.prefix: str = "!"
         log.info(f"Logged in as {self.user.name}, with ID {self.user.id}")
@@ -178,6 +179,8 @@ class BruhClient(discord.Client):
                 else f"Bruh {addOn}"
             )
 
+    # endregion
+
 
 def main():
     logging.basicConfig(
@@ -198,7 +201,7 @@ def main():
                 messages=True,
                 reactions=True,
             )
-            client: discord.Client = BruhClient(intents=intents, keys=keys)
+            client: BruhClient = BruhClient(intents=intents, keys=keys)
             client.run(keys["token"])
     except (IOError, FileNotFoundError):
         print("Key not provided, exiting")
