@@ -175,8 +175,7 @@ class BruhClient(discord.Client):
                 await channel.send("BRUH")
                 return
             await channel.send(
-                f"{'bruh' if random.randint(0, 1) == 0
-                else 'Bruh'} {addOn}"
+                f"{'bruh' if random.randint(0, 1) == 0 else 'Bruh'}{(' ' + addOn) if len(addOn) != 0 else ''}"
             )
 
     # endregion
