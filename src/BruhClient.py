@@ -29,6 +29,7 @@ class BruhClient(discord.Client):
                 else None
             )
         else:
+            log.warn(f"Input to entry getter was of type {type(input)}")
             return None
 
     @staticmethod
@@ -94,7 +95,7 @@ class BruhClient(discord.Client):
 
     async def on_message_delete(self, message: discord.Message):
         log.info("Message deletion noticed")
-        if self.servers[await BruhClient.get_key(message)]["delete_message"]:
+        if await self.get_guild_entry(message)["delete_message"]:
             async for entry in message.guild.audit_logs(limit=10):
                 if (
                     entry.action == discord.AuditLogAction.message_delete
@@ -159,13 +160,13 @@ class BruhClient(discord.Client):
         self.minuteCache[member.id] = 1
 
     async def on_member_remove(self, member: discord.Member, addOn=""):
-        key_name = await BruhClient.get_key(member)
+        entry: Dict[str, str] = await self.get_guild_entry(member)
         if (
-            key_name is not None
-            and self.servers[key_name]["channel"] is not None
+            entry is not None
+            and entry["channel"] is not None
         ):
             channel: discord.TextChannel = self.get_channel(
-                self.servers[key_name]["channel"]
+                entry["channel"]
             )
             log.info(
                 f"Sending message in channel: {channel.name} of Guild: {member.guild.name}"
@@ -174,9 +175,8 @@ class BruhClient(discord.Client):
                 await channel.send("BRUH")
                 return
             await channel.send(
-                f"bruh {addOn}"
-                if random.randint(0, 1) == 0
-                else f"Bruh {addOn}"
+                f"{'bruh' if random.randint(0, 1) == 0
+                else 'Bruh'} {addOn}"
             )
 
     # endregion
