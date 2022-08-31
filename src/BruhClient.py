@@ -95,7 +95,7 @@ class BruhClient(discord.Client):
 
     async def on_message_delete(self, message: discord.Message):
         log.info("Message deletion noticed")
-        if await self.get_guild_entry(message)["delete_message"]:
+        if (await self.get_guild_entry(message))["delete_message"]:
             async for entry in message.guild.audit_logs(limit=10):
                 if (
                     entry.action == discord.AuditLogAction.message_delete
@@ -161,13 +161,8 @@ class BruhClient(discord.Client):
 
     async def on_member_remove(self, member: discord.Member, addOn=""):
         entry: Dict[str, str] = await self.get_guild_entry(member)
-        if (
-            entry is not None
-            and entry["channel"] is not None
-        ):
-            channel: discord.TextChannel = self.get_channel(
-                entry["channel"]
-            )
+        if entry is not None and entry["channel"] is not None:
+            channel: discord.TextChannel = self.get_channel(entry["channel"])
             log.info(
                 f"Sending message in channel: {channel.name} of Guild: {member.guild.name}"
             )
