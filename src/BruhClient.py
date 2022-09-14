@@ -1,8 +1,12 @@
 import discord, random, json, logging
 from . import handlers
-from .VERSION import VERSION as VERSION
+from .VERSION import VERSION
 from cachetools import TTLCache
 from typing import Dict
+from sys import version_info
+
+if version_info[0] == 3 and version_info[1] < 10:
+    from __future__ import annotations
 
 log = logging.getLogger(__name__)
 
@@ -13,7 +17,9 @@ class BruhClient(discord.Client):
         super().__init__(**kwargs)
 
     # region Helpers
-    async def get_guild_entry(self, input) -> str:
+    async def get_guild_entry(
+        self, input: (discord.Guild | discord.Member | discord.Message)
+    ) -> str:
         if isinstance(input, discord.Guild):
             return (
                 self.servers[str(input.id)]
